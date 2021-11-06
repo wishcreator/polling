@@ -1,6 +1,6 @@
 export class TestHelper {
 
-      waitingVariable: null | string = null;
+      waitingVariable: any = null;
 
       fillWaitingVariable(waitingVariable: any, time: number) {
         setTimeout(() => {

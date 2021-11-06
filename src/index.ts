@@ -1,52 +1,56 @@
-interface IRun {
-    fn: (...params: any[]) => any,
-    validateFn?: (result: any) => boolean,
-    delay: number,
-    retry: number,
-    params?: any[],
-    logFn?:({result, delay, retry, exp}: {result: any, delay: number, retry: number, exp: number}) => any,
-    exp?: number 
-}
- 
+import { IRun } from "./interfaces/IRun";
+
 export class Polling {
-    constructor(private config: {exponential?: boolean}) {}
+    /**
+    * @param {string} [exponential="false"] Sets exponential to true / false. Default is false.
+    */
+    constructor(private config: { exponential?: boolean } = { exponential: false }) { }
 
-    async run<T>({fn, validateFn = isValid => !!isValid, delay, retry, params = [], logFn, exp = 1}: IRun): Promise<T> {
-        
-        this.validateRetry(retry);
+    async run<T>({
+        waitForFn,
+        validateFn = isValid => !!isValid,
+        delay, 
+        retry, 
+        params = [],
+        logFn,
+        power = 0 }: IRun<T>): Promise<T> {
 
-        const result = await fn(...params);
-        
-        if(logFn) {
-            logFn({result, delay, retry, exp})
+        this.validateRetry(retry, waitForFn);
+
+        const delayTime = await this.setSleep(delay, power);
+        const result = await waitForFn(...params);
+
+        if (logFn) {
+            logFn({ result, retry, delayTime });
         }
 
-        if(validateFn(result)) {
+        if (validateFn(result)) {
             return result;
         }
 
-        await this.setSleep(delay, exp);
-
-        exp++
+        power++
         retry--
-        return await this.run({fn, validateFn, delay, retry, params, logFn, exp});
+        return this.run({ waitForFn, validateFn, delay, retry, params, logFn, power });
     }
 
-    private async setSleep(delay: number, exp: number) {
-        if(this.config.exponential && exp) {
-            await this.sleep(delay ** exp);
+    private async setSleep(delay: number, power: number): Promise<number> {
+        let delayTime = 0;
+        if (power <= 0) return delayTime;
+        if (this.config.exponential) {
+            delayTime = delay ** power;
+            await this.sleep(delayTime);
         } else {
-            await this.sleep(delay);
+            delayTime = delay;
+            await this.sleep(delayTime);
         }
+        return delayTime;
     }
 
     private sleep(ms: number) {
-       return new Promise(resolve => setTimeout(resolve, ms));
+        return new Promise(resolve => setTimeout(resolve, ms));
     }
 
-    private validateRetry(retry: number) {
-        if(!retry) {
-            throw new Error('Polling retry cycle is ended.')
-        }
+    private validateRetry(retry: number, waitForFn: Function): never | void {
+        if (!retry) throw new Error(`Polling retry cycle is ended. function name ${waitForFn.name}`);
     }
 }

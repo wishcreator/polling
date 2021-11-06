@@ -1,12 +1,11 @@
 import { Polling } from "../src";
 import { TestHelper } from "./helpers/helper";
-jest.setTimeout(20000);
 
 test('Basic flow test', async () => {
-    const poll = new Polling({});
+    const poll = new Polling();
 
     const run = poll.run({
-        fn: () => 'Basic command',
+        waitForFn: () => 'Basic command',
         delay:1000,
         retry:5,
     })
@@ -20,16 +19,19 @@ test('Check polling with 1 sec response delay', async () => {
     const helper = new TestHelper();
     helper.fillWaitingVariable('Hello World', 1000);
     const waitFor = helper.waitFor.bind(helper);
+    const timeOut = jest.spyOn(global, 'setTimeout');
     
-    const poll = new Polling({});
+    const poll = new Polling();
     
     const result = poll.run({
-        fn: waitFor,
+        waitForFn: waitFor,
         delay:100,
-        retry:11,
+        retry:11
     })
     
     await expect(result).resolves.toEqual('Hello World');
+    expect(timeOut).toHaveBeenCalledTimes(10);
+
     
 });
 
@@ -43,10 +45,10 @@ test('Exponential flow test with 1 sec', async () => {
     const poll = new Polling({exponential: true});
 
     const result = poll.run({
-        fn: waitFor,
+        waitForFn: waitFor,
         delay:2,
         retry:11,
-        logFn: ({delay, exp}) => console.log('delay: '+delay ** exp)
+        logFn: ({delayTime}) => console.log('delay: '+ delayTime)
     })
 
     await expect(result).resolves.toEqual('Hello Poll')
@@ -61,14 +63,14 @@ test('Check polling with 1 sec response delay and custom validate function', asy
     helper.fillWaitingVariable(200, 1000);
     const waitFor = helper.waitFor.bind(helper);
     
-    const customValid = (param: number) => {
-       return param === 200
+    const customValid = (param: null | number) => {
+        if(param === 200) return 200;
     }
 
-    const poll = new Polling({});
+    const poll = new Polling();
 
     const result = poll.run({
-        fn: waitFor,
+        waitForFn: waitFor,
         delay:100,
         retry:11,
         validateFn: customValid
@@ -83,14 +85,14 @@ test('Check polling with 1 sec response delay and custom validate function that 
     helper.fillWaitingVariable(200, 1000);
     const waitFor = helper.waitFor.bind(helper);
     
-    const customValid = (param: number) => {
-       return param === 500
+    const customValid = (param: any) => {
+        if(param) return param === 500;
     }
 
-    const poll = new Polling({});
+    const poll = new Polling();
 
     const result = poll.run({
-        fn: waitFor,
+        waitForFn: waitFor,
         delay:100,
         retry:11,
         validateFn: customValid
@@ -106,13 +108,13 @@ test('Test Log', async () => {
     const waitFor = helper.waitFor.bind(helper);
 
     const consoleSpy = jest.spyOn(console, 'log');
-    const poll = new Polling({});
+    const poll = new Polling();
 
     const result = poll.run({
-        fn: waitFor,
+        waitForFn: waitFor,
         delay:95,
         retry:11,
-        logFn: ({delay, result}) => console.log('delay: '+delay, 'result: '+result)
+        logFn: ({delayTime, result}) => console.log('delay: '+ delayTime, 'result: '+ result)
         
     })
 
@@ -127,10 +129,10 @@ test('Test with params', async () => {
     helper.fillWaitingVariable('My name is:', 1000);
     const waitFor = helper.waitForWithVariable.bind(helper);
 
-    const poll = new Polling({});
+    const poll = new Polling();
 
-    const result = poll.run<string>({
-        fn: waitFor,
+    const result = poll.run<{name: string, last: string}>({
+        waitForFn: waitFor,
         delay:100,
         retry:11,
         params: ['James', 'Bond']
@@ -145,12 +147,13 @@ test('Test with object Types', async () => {
     helper.fillWaitingVariable({name: 'James', last: 'Bond'}, 1000);
     const waitFor = helper.waitFor.bind(helper);
 
-    const poll = new Polling({});
+    const poll = new Polling();
 
     const result = poll.run<{name: string, last: string}>({
-        fn: waitFor,
+        waitForFn: waitFor,
         delay:100,
-        retry:11
+        retry:11,
+        validateFn: (obj) => {if(obj && obj.name && obj.last) return true}
     })
 
     await expect(result).resolves.toEqual({
@@ -161,10 +164,10 @@ test('Test with object Types', async () => {
 
 test('Test waitFor receives error', async () => {
 
-    const poll = new Polling({});
+    const poll = new Polling();
 
     const result = poll.run({
-        fn: () => { throw new Error('Wait for failed') },
+        waitForFn: () => { throw new Error('Wait for failed') },
         delay:100,
         retry:11
     })
