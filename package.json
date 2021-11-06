@@ -14,8 +14,22 @@
   "jest": {
     "preset": "ts-jest"
   },
-  "keywords": [],
-  "author": "",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wishcreator/polling.git"
+  },
+  "keywords": [
+    "poll",
+    "polling",
+    "pulse",
+    "async",
+    "setTimeout",
+    "setInterval",
+    "wait",
+    "until",
+    "test"
+  ],
+  "author": "wishcreator",
   "license": "ISC",
   "devDependencies": {
     "@types/jest": "^27.0.2",
