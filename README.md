@@ -4,9 +4,9 @@ Promise based generic polling (Does not support IE).
 
 ## Table of Contents
 
-  - [Installing](#installing)
-  - [Usage](#usage)
-  - [Dictionary](#dictionary)
+	- [Installing](#installing)
+	- [Usage](#usage)
+	- [Dictionary](#dictionary)
 
 
 ## Installing
@@ -18,7 +18,7 @@ Using npm:
 ## Usage
 
 **Basic usage:**
-
+```typescript
     const { Polling } =  require('generic-polling-pulse'); 
     Or
     import { Polling } from  "generic-polling-pulse"; //ES6
@@ -33,11 +33,11 @@ Using npm:
 		
 		// Basic poll is waiting for truthy response from waitForFn callback.
 		// poll.run will return the wanted result from the waitfor function.
-
+```
 
 
 **Basic usage with exponential backoff:**
-
+```typescript
     import { Polling } from  "generic-polling-pulse";
     
     const poll = new  Polling({exponential:  true});
@@ -53,11 +53,11 @@ Using npm:
 		// We have added log function if we want to debug and more info.
 		logFn: ({delayTime}) =>  console.log('delay: '+ delayTime)
 		})
-
+```
 **Advanced examples:**
 
 A. The use of custom validations:
-
+```typescript
     import { Polling } from  "generic-polling-pulse";
     
     const poll = new  Polling();
@@ -72,9 +72,9 @@ A. The use of custom validations:
 	    // We can use custom validate callback function to validate our waitForFn response.
 	    // We are looking for status 200;
 	    // The param - is actuall response response from waitForFn callback.
-		const customValid = (param: number) => {
+		const customValid = (param: null | number) => {
 			// We are looking for 200 response from waitFor callback.
-		   return param === 200
+		   if(param === 200) return  200;
 		}
 		
 		const result = poll.run({
@@ -83,8 +83,9 @@ A. The use of custom validations:
 		    retry:11,
 		    validateFn: customValid
 		})
+```
 **B. Usage of types**
-
+```typescript
     import { Polling } from  "generic-polling-pulse";
 	    
 	const  poll = new  Polling();
@@ -94,11 +95,11 @@ A. The use of custom validations:
 	delay:100,
 	retry:11,
 	// We can use custom validate callback function to validate our waitForFn response.
-	validateFn: ({name, last}) => { if(name && last) return  true; }
+	validateFn: (obj) => {if(obj && obj.name && obj.last) return  true}
 	})
-
+```
 **C. WaitFor usage of parameters:**
-
+```typescript
     import { Polling } from  "generic-polling-pulse";
 	    
 	const  poll = new  Polling();
@@ -114,13 +115,13 @@ A. The use of custom validations:
 	retry:11, // Number of retries
 	params: ['12345678a'] // Params used for waitForFn
 	})
-
+```
 
 
 ## Dictionary
-
+```typescript
     run<T>({waitForFn, validateFn, logFn, delay, retry, params, power}): Promise<T>
-
+```
 | CallBacks| explanation |
 |--|--|
 | waitForFn| WaitFor Function is the function you want to run poll on. The default validation process checks if the WaitFor has a truthy response. For custom validation please use "validateFn". |
