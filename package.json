@@ -1,7 +1,7 @@
 {
   "name": "generic-polling-pulse",
   "version": "1.0.5",
-  "description": "",
+  "description": "Promise based generic easy polling",
   "main": "./build/index.js",
   "types": "./build/index.d.ts",
   "files": [
@@ -29,7 +29,7 @@
     "until",
     "test"
   ],
-  "author": "wishcreator",
+  "author": "Alex B",
   "license": "ISC",
   "devDependencies": {
     "@types/jest": "^27.0.2",

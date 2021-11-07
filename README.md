@@ -1,6 +1,6 @@
 # generic-polling-pulse
 
-Promise based generic polling (Does not support IE).
+Promise based generic polling.
 
 ## Table of Contents
 
@@ -19,20 +19,41 @@ Using npm:
 
 ## Usage
 
-**Basic usage:**
+**Basic usage (async):**
 ```typescript
 const { Polling } =  require('generic-polling-pulse'); 
-Or
+//Or
+import { Polling } from  "generic-polling-pulse"; //ES6
+
+const poll = new  Polling();
+
+async function doSomething() {
+	const run = await poll.run({
+		waitForFn: () => 'Basic command', 
+		delay:1000,
+		retry:5,
+	})
+}
+// Basic poll is waiting for truthy response from waitForFn callback.
+// poll.run will return the wanted result from the waitfor function.
+```
+
+**Basic usage (then):**
+```typescript
+const { Polling } =  require('generic-polling-pulse'); 
+//Or
 import { Polling } from  "generic-polling-pulse"; //ES6
 
 const poll = new  Polling();
 
 const run = poll.run({
-waitForFn: () => 'Basic command', 
-delay:1000,
-retry:5,
-})
-		
+	waitForFn: () => 'Basic command', 
+	delay:1000,
+	retry:5,
+});
+run.then((res) => {
+	console.log(res)
+});
 // Basic poll is waiting for truthy response from waitForFn callback.
 // poll.run will return the wanted result from the waitfor function.
 ```
@@ -48,13 +69,15 @@ const waitFor = () => {
 	Waiting for answer...
 }
   
-const run = poll.run({
-	waitForFn: waitFor, 
-	delay: 2, // Delay in ms
-	retry: 10,
-	// We have added log function if we want to debug and more info.
-	logFn: ({delayTime}) =>  console.log('delay: '+ delayTime)
-})
+async function doSomething() {
+	const run = await poll.run({
+		waitForFn: waitFor, 
+		delay: 2, // Delay in ms
+		retry: 10,
+		// We have added log function if we want to debug and more info.
+		logFn: ({delayTime}) =>  console.log('delay: '+ delayTime)
+	})
+}
 ```
 **Advanced examples:**
 
@@ -79,12 +102,14 @@ const customValid = (param: null | number) => {
    if(param === 200) return  200;
 }
 
-const result = poll.run({
-    waitForFn: waitFor,
-    delay:100,
-    retry:11,
-    validateFn: customValid
-})
+async function doSomething() {
+	const result = await poll.run({
+	    waitForFn: waitFor,
+	    delay:100,
+	    retry:11,
+	    validateFn: customValid
+	})
+}
 ```
 **B. Usage of types**
 ```typescript
@@ -92,13 +117,15 @@ import { Polling } from  "generic-polling-pulse";
     
 const  poll = new  Polling();
  
-const result = poll.run<{name: string, last: string}>({
-	waitForFn:  waitFor,
-	delay:100,
-	retry:11,
-	// We can use custom validate callback function to validate our waitForFn response.
-	validateFn: (obj) => {if(obj && obj.name && obj.last) return  true}
-})
+async function doSomething() {
+	const result = await poll.run<{name: string, last: string}>({
+		waitForFn:  waitFor,
+		delay:100,
+		retry:11,
+		// We can use custom validate callback function to validate our waitForFn response.
+		validateFn: (obj) => {if(obj && obj.name && obj.last) return  true}
+	})
+}
 ```
 **C. WaitFor usage of parameters:**
 ```typescript
@@ -110,13 +137,14 @@ const waitForWithParams = async (token: string) => {
 	... fetch(url) logic waits untill data recived;
 	return  'My name is: ' + ' ' + name + ' ' + lastName;
 }
-
-const  result = poll.run<{name: string, last: string}>({
-	waitForFn: waitForWithParams,
-	delay:100, // delay in ms
-	retry:11, // Number of retries
-	params: ['12345678a'] // Params used for waitForFn
-})
+async function doSomething() {
+	const  result = await poll.run<{name: string, last: string}>({
+		waitForFn: waitForWithParams,
+		delay:100, // delay in ms
+		retry:11, // Number of retries
+		params: ['12345678a'] // Params used for waitForFn
+	})
+}
 ```
 
 
