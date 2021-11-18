@@ -17,7 +17,7 @@ test('Basic flow test', async () => {
 test('Check polling with 1 sec response delay', async () => {
     
     const helper = new TestHelper();
-    helper.fillWaitingVariable('Hello World', 1000);
+    helper.fillWaitingVariable('Hello World', 600);
     const waitFor = helper.waitFor.bind(helper);
     const timeOut = jest.spyOn(global, 'setTimeout');
     
@@ -30,7 +30,7 @@ test('Check polling with 1 sec response delay', async () => {
     })
     
     await expect(result).resolves.toEqual('Hello World');
-    expect(timeOut).toHaveBeenCalledTimes(10);
+    expect(timeOut).toHaveBeenCalledTimes(6);
 
     
 });
@@ -38,7 +38,7 @@ test('Check polling with 1 sec response delay', async () => {
 test('Exponential flow test with 1 sec', async () => {
        
     const helper = new TestHelper();
-    helper.fillWaitingVariable('Hello Poll', 1000);
+    helper.fillWaitingVariable('Hello Poll', 600);
     const waitFor = helper.waitFor.bind(helper);
     const consoleSpy = jest.spyOn(console, 'log');
 
@@ -52,7 +52,7 @@ test('Exponential flow test with 1 sec', async () => {
     })
 
     await expect(result).resolves.toEqual('Hello Poll')
-    expect(consoleSpy).toHaveBeenCalledTimes(10)
+    expect(consoleSpy).toHaveBeenCalledTimes(9)
 });
 
 
@@ -60,7 +60,7 @@ test('Exponential flow test with 1 sec', async () => {
 test('Check polling with 1 sec response delay and custom validate function', async () => {
     
     const helper = new TestHelper();
-    helper.fillWaitingVariable(200, 1000);
+    helper.fillWaitingVariable(200, 500);
     const waitFor = helper.waitFor.bind(helper);
     
     const customValid = (param: null | number) => {
@@ -82,7 +82,7 @@ test('Check polling with 1 sec response delay and custom validate function', asy
 test('Check polling with 1 sec response delay and custom validate function that does not match', async () => {
     
     const helper = new TestHelper();
-    helper.fillWaitingVariable(200, 1000);
+    helper.fillWaitingVariable(200, 500);
     const waitFor = helper.waitFor.bind(helper);
     
     const customValid = (param: any) => {
@@ -126,7 +126,7 @@ test('Test Log', async () => {
 test('Test with params', async () => {
        
     const helper = new TestHelper();
-    helper.fillWaitingVariable('My name is:', 1000);
+    helper.fillWaitingVariable('My name is:', 500);
     const waitFor = helper.waitForWithVariable.bind(helper);
 
     const poll = new Polling();
@@ -144,7 +144,7 @@ test('Test with params', async () => {
 test('Test with object Types', async () => {
        
     const helper = new TestHelper();
-    helper.fillWaitingVariable({name: 'James', last: 'Bond'}, 1000);
+    helper.fillWaitingVariable({name: 'James', last: 'Bond'}, 500);
     const waitFor = helper.waitFor.bind(helper);
 
     const poll = new Polling();
@@ -173,4 +173,45 @@ test('Test waitFor receives error', async () => {
     })
 
     await expect(result).rejects.toThrowError('Wait for failed')
+});
+
+test('Test Custom error message', async () => {
+
+    const helper = new TestHelper();
+    helper.fillWaitingVariable('Hello world', 500);
+    const waitFor = helper.waitFor.bind(helper);
+
+    const poll = new Polling();
+
+    const result = poll.run({
+        waitForFn: waitFor,
+        delay:100,
+        retry:5,
+        retryErrorMessage: 'Nothing work'
+    })
+
+    await expect(result).rejects.toThrowError('Nothing work');
+});
+
+test('Test stop function', async () => {
+
+    const helper = new TestHelper();
+    helper.fillWaitingVariable('Hello world', 300);
+    const waitFor = helper.waitFor.bind(helper);
+
+    const poll = new Polling();
+    
+    const result = poll.run({
+        waitForFn: waitFor,
+        delay:100,
+        retry:5
+    });
+
+    let stop;
+    setTimeout(() => {
+        stop = poll.stop();
+    }, 100)
+    
+    await expect(result).rejects.toThrowError('Polling was manually stopped');
+    expect(stop).toEqual({status: 'stop'});
 });

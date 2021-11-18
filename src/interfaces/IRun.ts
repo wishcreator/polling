@@ -34,4 +34,8 @@ export interface IRun<T> {
   * @param power Sets the power X^Y. It is possible to change the initial default power.
   */
   power?: number;
+    /**
+  * @param retryErrorMessage Sets custom retry error message.
+  */
+     retryErrorMessage?: string;
 }

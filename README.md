@@ -8,7 +8,7 @@ Promise based generic polling.
 	- [Table of Contents](#table-of-contents)
 	- [Installing](#installing)
 	- [Usage](#usage)
-	- [Dictionary](#dictionary)
+	- [Dictionary - Methods](#dictionary---methods)
 
 
 ## Installing
@@ -148,7 +148,7 @@ async function doSomething() {
 ```
 
 
-## Dictionary
+## Dictionary - Methods
 ```typescript
  run<T>({waitForFn, validateFn, logFn, delay, retry, params, power}): Promise<T>
 ```
@@ -157,11 +157,14 @@ async function doSomething() {
 | waitForFn| WaitFor Function is the function you want to run poll on. The default validation process checks if the WaitFor has a truthy response. For custom validation please use "validateFn". |
 | validateFn| Validate Function accepts waitForFunction's result. The default validation checks if the response is truthy or not. You can use this function to write your own custom logic. |
 | logFn| logger accepts callback function that returns some logging information. {result, retry, delayTime}. |
+|**Params**|--|
+| delay| Sets a delay in ms. |
+| retry| Sets the number of maximum polling runs. |
+| params| Sets a parameters that will be called by the waitForFn method. |
+| power| Sets the power $X^{Y}$. It is possible to change the initial default power |
+| retryErrorMessage| Sets custom retry error message. |
 
-
-| Parameters | explanation |
-|--|--|
-| delay: number | Sets a delay in ms. |
-| retry: number| Sets the number of maximum polling runs. |
-| params: any[]| Sets a parameters that will be called by the waitForFn method. |
-| power: number| Sets the power $X^{Y}$. It is possible to change the initial default power |
+---
+```typescript
+ stop():{ status: string } // in case you want to stop polling manually. (abort/cancel)
+```

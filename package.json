@@ -9,7 +9,8 @@
   ],
   "scripts": {
     "test": "jest --watch",
-    "build": "tsc"
+    "build": "tsc",
+    "coverage": "jest --collectCoverage"
   },
   "jest": {
     "preset": "ts-jest"
